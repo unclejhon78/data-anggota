@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Data Keanggotaan Jakarta Timur</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f6f9; }
+    h2 { color: #333; text-align: center; }
+    .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .search-bar { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; box-sizing: border-box; }
+    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 13px; }
+    th { background-color: #007bff; color: white; }
+    tr:nth-child(even) { background-color: #f9f9f9; }
+    .btn-link { padding: 4px 8px; background-color: #28a745; color: white; text-decoration: none; border-radius: 3px; font-size: 11px; }
+    .badge { padding: 3px 6px; border-radius: 3px; font-weight: bold; color: white; font-size: 11px; }
+    .bg-aktif { background-color: #28a745; }
+    .bg-nonaktif { background-color: #dc3545; }
+    #loading { text-align: center; font-weight: bold; padding: 20px; color: #666; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <h2>Data Anggota Terdaftar</h2>
+  
+  <input type="text" id="searchInput" class="search-bar" onkeyup="filterTable()" placeholder="Cari Berdasarkan Nama, No KTA, DPC, atau DPRT...">
+
+  <div id="loading">Memuat data dari Google Sheets...</div>
+
+  <table id="dataTable" style="display:none;">
+    <thead>
+      <tr>
+        <th>No</th>
+        <th>Waktu</th>
+        <th>Nama</th>
+        <th>No KTA</th>
+        <th>DPC</th>
+        <th>DPRT</th>
+        <th>Jabatan</th>
+        <th>Status</th>
+        <th>Berkas KTP</th>
+        <th>Berkas KTA</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+</div>
+
+<script>
+  // MASUKKAN SCRIPT_URL WEB APP APPS SCRIPT ANDA DI SINI
+  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzri5xmLID_X9vz39a5ONmFT1UxDoLZSets4xS60urpCW6eeYfKSmMtpcMs6gJ76KXW/exec";
+
+  async function loadData() {
+    try {
+      const response = await fetch(SCRIPT_URL);
+      const resData = await response.json();
+
+      if (resData.status === 'success') {
+        const data = resData.data;
+        const tbody = document.getElementById("tableBody");
+        tbody.innerHTML = "";
+
+        data.forEach((item, index) => {
+          const row = document.createElement("tr");
+
+          const statusBadge = item.Status === 'Aktif' 
+            ? `<span class="badge bg-aktif">Aktif</span>` 
+            : `<span class="badge bg-nonaktif">${item.Status || '-'}</span>`;
+
+          const linkKtp = item['URL KTP'] ? `<a href="${item['URL KTP']}" target="_blank" class="btn-link">Lihat KTP</a>` : '-';
+          const linkKta = item['URL KTA'] ? `<a href="${item['URL KTA']}" target="_blank" class="btn-link">Lihat KTA</a>` : '-';
+
+          row.innerHTML = `
+            <td>${index + 1}</td>
+            <td>${item.Timestamp || '-'}</td>
+            <td><b>${item.Nama || '-'}</b></td>
+            <td>${item['No KTA'] || '-'}</td>
+            <td>${item.DPC || '-'}</td>
+            <td>${item.DPRT || '-'}</td>
+            <td>${item.Jabatan || '-'}</td>
+            <td>${statusBadge}</td>
+            <td>${linkKtp}</td>
+            <td>${linkKta}</td>
+          `;
+          tbody.appendChild(row);
+        });
+
+        document.getElementById("loading").style.display = "none";
+        document.getElementById("dataTable").style.display = "table";
+      } else {
+        document.getElementById("loading").innerText = "Gagal memuat data: " + resData.message;
+      }
+    } catch (err) {
+      document.getElementById("loading").innerText = "Error mengambil data dari server.";
+    }
+  }
+
+  // Fungsi Cari / Filter Tabel
+  function filterTable() {
+    const input = document.getElementById("searchInput").value.toLowerCase();
+    const rows = document.querySelectorAll("#tableBody tr");
+
+    rows.forEach(row => {
+      const text = row.innerText.toLowerCase();
+      row.style.display = text.includes(input) ? "" : "none";
+    });
+  }
+
+  // Jalankan saat halaman dibuka
+  loadData();
+</script>
+
+</body>
+</html>
