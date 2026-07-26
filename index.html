@@ -192,16 +192,124 @@
       font-size: 0.8rem;
       font-weight: 500;
       margin-right: 4px;
+      border: none;
+      cursor: pointer;
     }
 
     .btn-ktp { background-color: #e7f1ff; color: #0d6efd; }
+    .btn-ktp:hover { background-color: #cfe2ff; }
+
     .btn-kta { background-color: #f3e8ff; color: #8950fc; }
+    .btn-kta:hover { background-color: #e2d2fe; }
 
     #loading {
       text-align: center;
       padding: 40px;
       color: var(--text-muted);
       font-weight: 500;
+    }
+
+    /* Modern Popup Modal Styling */
+    .modal-backdrop {
+      display: none;
+      position: fixed;
+      top: 0; left: 0;
+      width: 100%; height: 100%;
+      background: rgba(0, 0, 0, 0.65);
+      backdrop-filter: blur(4px);
+      z-index: 9999;
+      justify-content: center;
+      align-items: center;
+      padding: 20px;
+    }
+
+    .modal-box {
+      background: #fff;
+      border-radius: 12px;
+      max-width: 800px;
+      width: 100%;
+      max-height: 90vh;
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+      animation: modalFadeIn 0.25s ease-out;
+    }
+
+    @keyframes modalFadeIn {
+      from { opacity: 0; transform: translateY(-20px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+
+    .modal-header {
+      padding: 16px 20px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid var(--border-color);
+    }
+
+    .modal-header h3 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-dark);
+    }
+
+    .modal-close {
+      background: transparent;
+      border: none;
+      font-size: 1.25rem;
+      color: var(--text-muted);
+      cursor: pointer;
+      padding: 4px 8px;
+    }
+
+    .modal-close:hover { color: #dc3545; }
+
+    .modal-body {
+      padding: 16px;
+      flex: 1;
+      background: #f8f9fa;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 350px;
+    }
+
+    .modal-body iframe, .modal-body img {
+      width: 100%;
+      height: 70vh;
+      border: none;
+      border-radius: 8px;
+      object-fit: contain;
+    }
+
+    .modal-footer {
+      padding: 12px 20px;
+      border-top: 1px solid var(--border-color);
+      display: flex;
+      justify-content: flex-end;
+      gap: 10px;
+    }
+
+    .btn-secondary {
+      padding: 8px 16px;
+      border-radius: 6px;
+      background: #e9ecef;
+      color: var(--text-dark);
+      border: none;
+      cursor: pointer;
+      font-weight: 500;
+    }
+
+    .btn-external {
+      padding: 8px 16px;
+      border-radius: 6px;
+      background: var(--primary-color);
+      color: #fff;
+      text-decoration: none;
+      font-weight: 500;
+      font-size: 0.9rem;
     }
   </style>
 </head>
@@ -213,7 +321,7 @@
       <h1><i class="fa-solid fa-users-gear" style="color: var(--primary-color);"></i> Data Keanggotaan Jakarta Timur</h1>
     </div>
 
-    <!-- Widgets Statistik (Otomatis Terhitung dari Google Sheets) -->
+    <!-- Widgets Statistik -->
     <div class="stats-grid">
       <div class="stat-card">
         <div class="stat-icon stat-blue"><i class="fa-solid fa-users"></i></div>
@@ -278,8 +386,24 @@
     </div>
   </div>
 
+  <!-- Popup Modal -->
+  <div id="fileModal" class="modal-backdrop" onclick="closeModalOnBackdrop(event)">
+    <div class="modal-box">
+      <div class="modal-header">
+        <h3 id="modalTitle"><i class="fa-solid fa-file"></i> Pratinjau Berkas</h3>
+        <button class="modal-close" onclick="closeModal()"><i class="fa-solid fa-xmark"></i></button>
+      </div>
+      <div class="modal-body" id="modalBody">
+        <!-- Content iframe/image loaded dynamically -->
+      </div>
+      <div class="modal-footer">
+        <button class="btn-secondary" onclick="closeModal()">Tutup</button>
+        <a id="btnOpenNewTab" href="#" target="_blank" class="btn-external"><i class="fa-solid fa-arrow-up-right-from-square"></i> Buka Tab Baru</a>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // SCRIPT_URL menggunakan Web App Google Apps Script milik Anda
     const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwhbsSkRjE_o6POwHXJ9beGaWcVMEbiU3wRNrs64hzKCAUqJPlnHO8hnJsLdNTiNN-Y/exec";
 
     async function loadData() {
@@ -306,12 +430,13 @@
               ? `<span class="badge-aktif">Aktif</span>` 
               : `<span class="badge-nonaktif">${item.Status || '-'}</span>`;
 
+            // Tombol KTP & KTA dengan Popup onclick
             const linkKtp = item['URL KTP'] 
-              ? `<a href="${item['URL KTP']}" target="_blank" class="btn-file btn-ktp"><i class="fa-solid fa-id-card"></i> KTP</a>` 
+              ? `<button onclick="openModal('${item['URL KTP']}', 'Berkas KTP - ${item.Nama}')" class="btn-file btn-ktp"><i class="fa-solid fa-id-card"></i> KTP</button>` 
               : '-';
 
             const linkKta = item['URL KTA'] 
-              ? `<a href="${item['URL KTA']}" target="_blank" class="btn-file btn-kta"><i class="fa-solid fa-address-card"></i> KTA</a>` 
+              ? `<button onclick="openModal('${item['URL KTA']}', 'Berkas KTA - ${item.Nama}')" class="btn-file btn-kta"><i class="fa-solid fa-address-card"></i> KTA</button>` 
               : '-';
 
             row.innerHTML = `
@@ -342,6 +467,32 @@
         }
       } catch (err) {
         document.getElementById("loading").innerText = "Error mengambil data dari server.";
+      }
+    }
+
+    // Modal Popup Logic
+    function openModal(url, title) {
+      document.getElementById("modalTitle").innerHTML = `<i class="fa-solid fa-file-lines"></i> ${title}`;
+      
+      // Ubah Google Drive view URL agar bisa di-embed di iframe
+      let embedUrl = url;
+      if(url.includes('drive.google.com/file/d/')) {
+        embedUrl = url.replace('/view?usp=drivesdk', '/preview').replace('/view', '/preview');
+      }
+
+      document.getElementById("modalBody").innerHTML = `<iframe src="${embedUrl}" allow="autoplay"></iframe>`;
+      document.getElementById("btnOpenNewTab").href = url;
+      document.getElementById("fileModal").style.display = "flex";
+    }
+
+    function closeModal() {
+      document.getElementById("fileModal").style.display = "none";
+      document.getElementById("modalBody").innerHTML = ""; // Stop iframe loading
+    }
+
+    function closeModalOnBackdrop(e) {
+      if(e.target.id === 'fileModal') {
+        closeModal();
       }
     }
 
