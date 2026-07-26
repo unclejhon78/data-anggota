@@ -426,10 +426,12 @@
           let countAktif = 0;
           let countBerkas = 0;
           let uniqueDpc = new Set();
+          let uniqueDprt = new Set(); // 1. TAMBAHAN: Set untuk menampung DPRT Unik
 
           data.forEach((item, index) => {
             if (item.Status === 'Aktif') countAktif++;
-            if (item.DPC) uniqueDpc.add(item.DPC);
+            if (item.DPC && item.DPC !== '-') uniqueDpc.add(item.DPC);
+            if (item.DPRT && item.DPRT !== '-') uniqueDprt.add(item.DPRT); // 2. TAMBAHAN: Simpan DPRT ke dalam Set
             if (item['URL KTP'] && item['URL KTA']) countBerkas++;
 
             const row = document.createElement("tr");
@@ -465,6 +467,7 @@
           document.getElementById("statTotal").innerText = data.length;
           document.getElementById("statAktif").innerText = countAktif;
           document.getElementById("statDPC").innerText = uniqueDpc.size;
+          document.getElementById('total-dprt').innerText = uniqueDprt.size; // 3. PERBAIKAN: Mengambil jumlah DPRT unik (.size)
           document.getElementById("statBerkas").innerText = countBerkas;
 
           document.getElementById("loading").style.display = "none";
