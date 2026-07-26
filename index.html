@@ -4,113 +4,357 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Data Keanggotaan Jakarta Timur</title>
+  <!-- Google Fonts & Font Awesome Icons -->
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  
   <style>
-    body { font-family: Arial, sans-serif; margin: 20px; background-color: #f4f6f9; }
-    h2 { color: #333; text-align: center; }
-    .container { max-width: 1100px; margin: auto; background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
-    .search-bar { width: 100%; padding: 10px; margin-bottom: 15px; border: 1px solid #ccc; border-radius: 5px; font-size: 14px; box-sizing: border-box; }
-    table { width: 100%; border-collapse: collapse; margin-top: 10px; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; font-size: 13px; }
-    th { background-color: #007bff; color: white; }
-    tr:nth-child(even) { background-color: #f9f9f9; }
-    .btn-link { padding: 4px 8px; background-color: #28a745; color: white; text-decoration: none; border-radius: 3px; font-size: 11px; }
-    .badge { padding: 3px 6px; border-radius: 3px; font-weight: bold; color: white; font-size: 11px; }
-    .bg-aktif { background-color: #28a745; }
-    .bg-nonaktif { background-color: #dc3545; }
-    #loading { text-align: center; font-weight: bold; padding: 20px; color: #666; }
+    :root {
+      --primary-color: #0d6efd;
+      --bg-color: #f4f6f9;
+      --card-bg: #ffffff;
+      --text-dark: #212529;
+      --text-muted: #6c757d;
+      --border-color: #e9ecef;
+    }
+
+    * {
+      box-sizing: border-box;
+      font-family: 'Inter', sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      background-color: var(--bg-color);
+      color: var(--text-dark);
+      padding: 24px;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 24px;
+    }
+
+    .header h1 {
+      font-size: 1.5rem;
+      font-weight: 700;
+      color: #1a252f;
+    }
+
+    /* Cards Statistik */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+
+    .stat-card {
+      background: var(--card-bg);
+      padding: 20px;
+      border-radius: 12px;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+      border: 1px solid var(--border-color);
+      display: flex;
+      align-items: center;
+      gap: 16px;
+    }
+
+    .stat-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+    }
+
+    .stat-blue { background: #e7f1ff; color: #0d6efd; }
+    .stat-green { background: #e6f4ea; color: #198754; }
+    .stat-orange { background: #fff4e5; color: #fd7e14; }
+    .stat-purple { background: #f3e8ff; color: #8950fc; }
+
+    .stat-info h3 {
+      font-size: 1.25rem;
+      font-weight: 700;
+    }
+
+    .stat-info p {
+      font-size: 0.85rem;
+      color: var(--text-muted);
+    }
+
+    /* Area Tabel */
+    .content-card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      border: 1px solid var(--border-color);
+      box-shadow: 0 2px 4px rgba(0,0,0,0.03);
+      padding: 20px;
+    }
+
+    .controls {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 20px;
+      flex-wrap: wrap;
+    }
+
+    .search-box {
+      flex: 1;
+      min-width: 250px;
+      position: relative;
+    }
+
+    .search-box i {
+      position: absolute;
+      left: 12px;
+      top: 50%;
+      transform: translateY(-50%);
+      color: var(--text-muted);
+    }
+
+    .search-box input {
+      width: 100%;
+      padding: 10px 12px 10px 36px;
+      border: 1px solid #ced4da;
+      border-radius: 8px;
+      outline: none;
+      font-size: 0.9rem;
+    }
+
+    .table-container {
+      overflow-x: auto;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      text-align: left;
+      font-size: 0.9rem;
+    }
+
+    th {
+      background-color: #f8f9fa;
+      padding: 12px 16px;
+      font-weight: 600;
+      color: #495057;
+      border-bottom: 2px solid var(--border-color);
+    }
+
+    td {
+      padding: 14px 16px;
+      border-bottom: 1px solid var(--border-color);
+      vertical-align: middle;
+    }
+
+    tr:hover {
+      background-color: #f8f9fa;
+    }
+
+    .badge-aktif {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background-color: #e6f4ea;
+      color: #198754;
+      display: inline-block;
+    }
+
+    .badge-nonaktif {
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 0.75rem;
+      font-weight: 600;
+      background-color: #fde8e8;
+      color: #dc3545;
+      display: inline-block;
+    }
+
+    .btn-file {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 6px 12px;
+      border-radius: 6px;
+      text-decoration: none;
+      font-size: 0.8rem;
+      font-weight: 500;
+      margin-right: 4px;
+    }
+
+    .btn-ktp { background-color: #e7f1ff; color: #0d6efd; }
+    .btn-kta { background-color: #f3e8ff; color: #8950fc; }
+
+    #loading {
+      text-align: center;
+      padding: 40px;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
   </style>
 </head>
 <body>
 
-<div class="container">
-  <h2>Data Anggota Terdaftar</h2>
-  
-  <input type="text" id="searchInput" class="search-bar" onkeyup="filterTable()" placeholder="Cari Berdasarkan Nama, No KTA, DPC, atau DPRT...">
+  <div class="container">
+    <!-- Header -->
+    <div class="header">
+      <h1><i class="fa-solid fa-users-gear" style="color: var(--primary-color);"></i> Data Keanggotaan Jakarta Timur</h1>
+    </div>
 
-  <div id="loading">Memuat data dari Google Sheets...</div>
+    <!-- Widgets Statistik (Otomatis Terhitung dari Google Sheets) -->
+    <div class="stats-grid">
+      <div class="stat-card">
+        <div class="stat-icon stat-blue"><i class="fa-solid fa-users"></i></div>
+        <div class="stat-info">
+          <h3 id="statTotal">0</h3>
+          <p>Total Anggota</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-green"><i class="fa-solid fa-user-check"></i></div>
+        <div class="stat-info">
+          <h3 id="statAktif">0</h3>
+          <p>Status Aktif</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-orange"><i class="fa-solid fa-city"></i></div>
+        <div class="stat-info">
+          <h3 id="statDPC">0</h3>
+          <p>Total DPC</p>
+        </div>
+      </div>
+      <div class="stat-card">
+        <div class="stat-icon stat-purple"><i class="fa-solid fa-folder-closed"></i></div>
+        <div class="stat-info">
+          <h3 id="statBerkas">0</h3>
+          <p>Berkas Lengkap</p>
+        </div>
+      </div>
+    </div>
 
-  <table id="dataTable" style="display:none;">
-    <thead>
-      <tr>
-        <th>No</th>
-        <th>Waktu</th>
-        <th>Nama</th>
-        <th>No KTA</th>
-        <th>DPC</th>
-        <th>DPRT</th>
-        <th>Jabatan</th>
-        <th>Status</th>
-        <th>Berkas KTP</th>
-        <th>Berkas KTA</th>
-      </tr>
-    </thead>
-    <tbody id="tableBody"></tbody>
-  </table>
-</div>
+    <!-- Content Table -->
+    <div class="content-card">
+      <div class="controls">
+        <div class="search-box">
+          <i class="fa-solid fa-magnifying-glass"></i>
+          <input type="text" id="searchInput" onkeyup="filterTable()" placeholder="Cari berdasarkan Nama, No KTA, DPC, atau DPRT...">
+        </div>
+      </div>
 
-<script>
-  // MASUKKAN SCRIPT_URL WEB APP APPS SCRIPT ANDA DI SINI
-  const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwhbsSkRjE_o6POwHXJ9beGaWcVMEbiU3wRNrs64hzKCAUqJPlnHO8hnJsLdNTiNN-Y/exec";
+      <div id="loading"><i class="fa-solid fa-spinner fa-spin"></i> Memuat data dari Google Sheets...</div>
 
-  async function loadData() {
-    try {
-      const response = await fetch(SCRIPT_URL);
-      const resData = await response.json();
+      <div class="table-container">
+        <table id="dataTable" style="display:none;">
+          <thead>
+            <tr>
+              <th>No</th>
+              <th>Waktu</th>
+              <th>Nama Anggota</th>
+              <th>No KTA</th>
+              <th>DPC</th>
+              <th>DPRT</th>
+              <th>Jabatan</th>
+              <th>Status</th>
+              <th>Berkas KTP</th>
+              <th>Berkas KTA</th>
+            </tr>
+          </thead>
+          <tbody id="tableBody"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
 
-      if (resData.status === 'success') {
-        const data = resData.data;
-        const tbody = document.getElementById("tableBody");
-        tbody.innerHTML = "";
+  <script>
+    // SCRIPT_URL menggunakan Web App Google Apps Script milik Anda
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwhbsSkRjE_o6POwHXJ9beGaWcVMEbiU3wRNrs64hzKCAUqJPlnHO8hnJsLdNTiNN-Y/exec";
 
-        data.forEach((item, index) => {
-          const row = document.createElement("tr");
+    async function loadData() {
+      try {
+        const response = await fetch(SCRIPT_URL);
+        const resData = await response.json();
 
-          const statusBadge = item.Status === 'Aktif' 
-            ? `<span class="badge bg-aktif">Aktif</span>` 
-            : `<span class="badge bg-nonaktif">${item.Status || '-'}</span>`;
+        if (resData.status === 'success') {
+          const data = resData.data;
+          const tbody = document.getElementById("tableBody");
+          tbody.innerHTML = "";
 
-          const linkKtp = item['URL KTP'] ? `<a href="${item['URL KTP']}" target="_blank" class="btn-link">Lihat KTP</a>` : '-';
-          const linkKta = item['URL KTA'] ? `<a href="${item['URL KTA']}" target="_blank" class="btn-link">Lihat KTA</a>` : '-';
+          let countAktif = 0;
+          let countBerkas = 0;
+          let uniqueDpc = new Set();
 
-          row.innerHTML = `
-            <td>${index + 1}</td>
-            <td>${item.Timestamp || '-'}</td>
-            <td><b>${item.Nama || '-'}</b></td>
-            <td>${item['No KTA'] || '-'}</td>
-            <td>${item.DPC || '-'}</td>
-            <td>${item.DPRT || '-'}</td>
-            <td>${item.Jabatan || '-'}</td>
-            <td>${statusBadge}</td>
-            <td>${linkKtp}</td>
-            <td>${linkKta}</td>
-          `;
-          tbody.appendChild(row);
-        });
+          data.forEach((item, index) => {
+            if (item.Status === 'Aktif') countAktif++;
+            if (item.DPC) uniqueDpc.add(item.DPC);
+            if (item['URL KTP'] && item['URL KTA']) countBerkas++;
 
-        document.getElementById("loading").style.display = "none";
-        document.getElementById("dataTable").style.display = "table";
-      } else {
-        document.getElementById("loading").innerText = "Gagal memuat data: " + resData.message;
+            const row = document.createElement("tr");
+            const statusBadge = item.Status === 'Aktif' 
+              ? `<span class="badge-aktif">Aktif</span>` 
+              : `<span class="badge-nonaktif">${item.Status || '-'}</span>`;
+
+            const linkKtp = item['URL KTP'] 
+              ? `<a href="${item['URL KTP']}" target="_blank" class="btn-file btn-ktp"><i class="fa-solid fa-id-card"></i> KTP</a>` 
+              : '-';
+
+            const linkKta = item['URL KTA'] 
+              ? `<a href="${item['URL KTA']}" target="_blank" class="btn-file btn-kta"><i class="fa-solid fa-address-card"></i> KTA</a>` 
+              : '-';
+
+            row.innerHTML = `
+              <td>${index + 1}</td>
+              <td>${item.Timestamp || '-'}</td>
+              <td><b>${item.Nama || '-'}</b></td>
+              <td><code>${item['No KTA'] || '-'}</code></td>
+              <td>${item.DPC || '-'}</td>
+              <td>${item.DPRT || '-'}</td>
+              <td>${item.Jabatan || '-'}</td>
+              <td>${statusBadge}</td>
+              <td>${linkKtp}</td>
+              <td>${linkKta}</td>
+            `;
+            tbody.appendChild(row);
+          });
+
+          // Update Ringkasan Stat
+          document.getElementById("statTotal").innerText = data.length;
+          document.getElementById("statAktif").innerText = countAktif;
+          document.getElementById("statDPC").innerText = uniqueDpc.size;
+          document.getElementById("statBerkas").innerText = countBerkas;
+
+          document.getElementById("loading").style.display = "none";
+          document.getElementById("dataTable").style.display = "table";
+        } else {
+          document.getElementById("loading").innerText = "Gagal memuat data: " + resData.message;
+        }
+      } catch (err) {
+        document.getElementById("loading").innerText = "Error mengambil data dari server.";
       }
-    } catch (err) {
-      document.getElementById("loading").innerText = "Error mengambil data dari server.";
     }
-  }
 
-  // Fungsi Cari / Filter Tabel
-  function filterTable() {
-    const input = document.getElementById("searchInput").value.toLowerCase();
-    const rows = document.querySelectorAll("#tableBody tr");
+    function filterTable() {
+      const input = document.getElementById("searchInput").value.toLowerCase();
+      const rows = document.querySelectorAll("#tableBody tr");
+      rows.forEach(row => {
+        const text = row.innerText.toLowerCase();
+        row.style.display = text.includes(input) ? "" : "none";
+      });
+    }
 
-    rows.forEach(row => {
-      const text = row.innerText.toLowerCase();
-      row.style.display = text.includes(input) ? "" : "none";
-    });
-  }
-
-  // Jalankan saat halaman dibuka
-  loadData();
-</script>
-
+    loadData();
+  </script>
 </body>
 </html>
