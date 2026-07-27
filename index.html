@@ -411,7 +411,9 @@
   </div>
 
   <script>
-    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwhbsSkRjE_o6POwHXJ9beGaWcVMEbiU3wRNrs64hzKCAUqJPlnHO8hnJsLdNTiNN-Y/exec";
+    const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbzri5xmLID_X9vz39a5ONmFT1UxDoLZSets4xS60urpCW6eeYfKSmMtpcMs6gJ76KXW/exec"; // Sesuaikan jika ada URL terbaru
+
+    let globalData = []; // Menyimpan data dari server secara lokal
 
     async function loadData() {
       try {
@@ -419,59 +421,8 @@
         const resData = await response.json();
 
         if (resData.status === 'success') {
-          const data = resData.data;
-          const tbody = document.getElementById("tableBody");
-          tbody.innerHTML = "";
-
-          let countAktif = 0;
-          let countBerkas = 0;
-          let uniqueDpc = new Set();
-          let uniqueDprt = new Set(); // 1. TAMBAHAN: Set untuk menampung DPRT Unik
-
-          data.forEach((item, index) => {
-            if (item.Status === 'Aktif') countAktif++;
-            if (item.DPC && item.DPC !== '-') uniqueDpc.add(item.DPC);
-            if (item.DPRT && item.DPRT !== '-') uniqueDprt.add(item.DPRT); // 2. TAMBAHAN: Simpan DPRT ke dalam Set
-            if (item['URL KTP'] && item['URL KTA']) countBerkas++;
-
-            const row = document.createElement("tr");
-            const statusBadge = item.Status === 'Aktif' 
-              ? `<span class="badge-aktif">Aktif</span>` 
-              : `<span class="badge-nonaktif">${item.Status || '-'}</span>`;
-
-            // Tombol KTP & KTA dengan Popup onclick
-            const linkKtp = item['URL KTP'] 
-              ? `<button onclick="openModal('${item['URL KTP']}', 'Berkas KTP - ${item.Nama}')" class="btn-file btn-ktp"><i class="fa-solid fa-id-card"></i> KTP</button>` 
-              : '-';
-
-            const linkKta = item['URL KTA'] 
-              ? `<button onclick="openModal('${item['URL KTA']}', 'Berkas KTA - ${item.Nama}')" class="btn-file btn-kta"><i class="fa-solid fa-address-card"></i> KTA</button>` 
-              : '-';
-
-            row.innerHTML = `
-              <td>${index + 1}</td>
-              <td>${item.Timestamp || '-'}</td>
-              <td><b>${item.Nama || '-'}</b></td>
-              <td><code>${item['No KTA'] || '-'}</code></td>
-              <td>${item.DPC || '-'}</td>
-              <td>${item.DPRT || '-'}</td>
-              <td>${item.Jabatan || '-'}</td>
-              <td>${statusBadge}</td>
-              <td>${linkKtp}</td>
-              <td>${linkKta}</td>
-            `;
-            tbody.appendChild(row);
-          });
-
-          // Update Ringkasan Stat
-          document.getElementById("statTotal").innerText = data.length;
-          document.getElementById("statAktif").innerText = countAktif;
-          document.getElementById("statDPC").innerText = uniqueDpc.size;
-          document.getElementById('total-dprt').innerText = uniqueDprt.size; // 3. PERBAIKAN: Mengambil jumlah DPRT unik (.size)
-          document.getElementById("statBerkas").innerText = countBerkas;
-
-          document.getElementById("loading").style.display = "none";
-          document.getElementById("dataTable").style.display = "table";
+          globalData = resData.data; // Simpan ke variabel global
+          renderTable(globalData);
         } else {
           document.getElementById("loading").innerText = "Gagal memuat data: " + resData.message;
         }
@@ -480,16 +431,137 @@
       }
     }
 
-    // Modal Popup Logic
-    function openModal(url, title) {
-      document.getElementById("modalTitle").innerHTML = `<i class="fa-solid fa-file-lines"></i> ${title}`;
+    function renderTable(data) {
+      const tbody = document.getElementById("tableBody");
+      tbody.innerHTML = "";
+
+      let countAktif = 0;
+      let countBerkas = 0;
+      let uniqueDpc = new Set();
+      let uniqueDprt = new Set();
+
+      data.forEach((item, index) => {
+        if (item.Status === 'Aktif') countAktif++;
+        if (item.DPC && item.DPC !== '-') uniqueDpc.add(item.DPC);
+        if (item.DPRT && item.DPRT !== '-') uniqueDprt.add(item.DPRT);
+        if (item['URL KTP'] && item['URL KTA']) countBerkas++;
+
+        const row = document.createElement("tr");
+        const statusBadge = item.Status === 'Aktif' 
+          ? `<span class="badge-aktif">Aktif</span>` 
+          : `<span class="badge-nonaktif">${item.Status || '-'}</span>`;
+
+        const linkKtp = item['URL KTP'] 
+          ? `<button onclick="openModalFile('${item['URL KTP']}', 'Berkas KTP - ${item.Nama}')" class="btn-file btn-ktp"><i class="fa-solid fa-id-card"></i> KTP</button>` 
+          : '-';
+
+        const linkKta = item['URL KTA'] 
+          ? `<button onclick="openModalFile('${item['URL KTA']}', 'Berkas KTA - ${item.Nama}')" class="btn-file btn-kta"><i class="fa-solid fa-address-card"></i> KTA</button>` 
+          : '-';
+
+        row.innerHTML = `
+          <td>${index + 1}</td>
+          <td>${item.Timestamp || '-'}</td>
+          <td><b>${item.Nama || '-'}</b></td>
+          <td><code>${item['No KTA'] || '-'}</code></td>
+          <td>${item['No HP'] || '-'}</td>
+          <td>${item.Email || '-'}</td>
+          <td>${item.DPC || '-'}</td>
+          <td>${item.DPRT || '-'}</td>
+          <td>${item.Jabatan || '-'}</td>
+          <td>${statusBadge}</td>
+          <td>${linkKtp}</td>
+          <td>${linkKta}</td>
+          <td>
+            <button onclick="openEditModal(${index})" style="background:#ff9800; color:white; border:none; padding:5px 10px; border-radius:4px; cursor:pointer;">
+              <i class="fa-solid fa-pen-to-square"></i> Edit
+            </button>
+          </td>
+        `;
+        tbody.appendChild(row);
+      });
+
+      // Update Statistik Ringkasan
+      if(document.getElementById("statTotal")) document.getElementById("statTotal").innerText = data.length;
+      if(document.getElementById("statAktif")) document.getElementById("statAktif").innerText = countAktif;
+      if(document.getElementById("statDPC")) document.getElementById("statDPC").innerText = uniqueDpc.size;
+      if(document.getElementById("total-dprt")) document.getElementById("total-dprt").innerText = uniqueDprt.size;
+      if(document.getElementById("statBerkas")) document.getElementById("statBerkas").innerText = countBerkas;
+
+      document.getElementById("loading").style.display = "none";
+      document.getElementById("dataTable").style.display = "table";
+    }
+
+    // --- LOGIKA EDIT DATA ---
+    function openEditModal(index) {
+      const item = globalData[index];
       
-      // Ubah Google Drive view URL agar bisa di-embed di iframe
+      document.getElementById('editRowIndex').value = item.rowIndex;
+      document.getElementById('editNama').value = item.Nama || '';
+      document.getElementById('editNoKta').value = item['No KTA'] || '';
+      document.getElementById('editNoHp').value = item['No HP'] || '';
+      document.getElementById('editEmail').value = item.Email || '';
+      document.getElementById('editDpc').value = item.DPC || '';
+      document.getElementById('editDprt').value = item.DPRT || '';
+      document.getElementById('editJabatan').value = item.Jabatan || '';
+      document.getElementById('editStatus').value = item.Status || 'Aktif';
+
+      document.getElementById('editModal').style.display = 'flex';
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').style.display = 'none';
+    }
+
+    async function saveEditData(e) {
+      e.preventDefault();
+      
+      const btnSave = document.getElementById('btnSaveEdit');
+      btnSave.disabled = true;
+      btnSave.innerText = "Saving...";
+
+      const payload = {
+        action: "update",
+        rowIndex: document.getElementById('editRowIndex').value,
+        nama: document.getElementById('editNama').value,
+        noKta: document.getElementById('editNoKta').value,
+        noHp: document.getElementById('editNoHp').value,
+        email: document.getElementById('editEmail').value,
+        dpc: document.getElementById('editDpc').value,
+        dprt: document.getElementById('editDprt').value,
+        jabatan: document.getElementById('editJabatan').value,
+        status: document.getElementById('editStatus').value
+      };
+
+      try {
+        const response = await fetch(SCRIPT_URL, {
+          method: 'POST',
+          body: JSON.stringify(payload)
+        });
+        const res = await response.json();
+
+        if (res.status === 'success') {
+          alert('Data berhasil diperbarui!');
+          closeEditModal();
+          loadData(); // Memuat ulang data dari Google Sheet
+        } else {
+          alert('Gagal memperbarui: ' + res.message);
+        }
+      } catch (err) {
+        alert('Terjadi kesalahan koneksi!');
+      } finally {
+        btnSave.disabled = false;
+        btnSave.innerText = "Simpan Perubahan";
+      }
+    }
+
+    // Modal Popup View File Logic
+    function openModalFile(url, title) {
+      document.getElementById("modalTitle").innerHTML = `<i class="fa-solid fa-file-lines"></i> ${title}`;
       let embedUrl = url;
       if(url.includes('drive.google.com/file/d/')) {
         embedUrl = url.replace('/view?usp=drivesdk', '/preview').replace('/view', '/preview');
       }
-
       document.getElementById("modalBody").innerHTML = `<iframe src="${embedUrl}" allow="autoplay"></iframe>`;
       document.getElementById("btnOpenNewTab").href = url;
       document.getElementById("fileModal").style.display = "flex";
@@ -497,13 +569,7 @@
 
     function closeModal() {
       document.getElementById("fileModal").style.display = "none";
-      document.getElementById("modalBody").innerHTML = ""; // Stop iframe loading
-    }
-
-    function closeModalOnBackdrop(e) {
-      if(e.target.id === 'fileModal') {
-        closeModal();
-      }
+      document.getElementById("modalBody").innerHTML = "";
     }
 
     function filterTable() {
@@ -516,6 +582,6 @@
     }
 
     loadData();
-  </script>
+</script>
 </body>
 </html>
